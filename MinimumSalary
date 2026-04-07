@@ -1,0 +1,646 @@
+echo "# healthsciencelibs" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/dwpete2/healthsciencelibs.git
+git push -u origin main
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minimum Salary Frequency Graph</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(0,0,0,.18);
+      --border:rgba(255,255,255,.10);
+      --text:#eaf0ff;
+      --muted:#a4b3d6;
+      --grid:rgba(255,255,255,.10);
+      --accent:#7c5cff;
+      --accent2:#2dd4bf;
+      --warn:#ffb703;
+      --shadow: 0 16px 40px rgba(0,0,0,.35);
+      --radius: 16px;
+      --ring: 0 0 0 3px rgba(124,92,255,.25);
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(124,92,255,.22), transparent 55%),
+        radial-gradient(900px 500px at 80% 20%, rgba(45,212,191,.16), transparent 55%),
+        radial-gradient(900px 600px at 50% 100%, rgba(255,183,3,.10), transparent 60%),
+        linear-gradient(180deg, #070b14 0%, var(--bg) 55%, #070b14 100%);
+      min-height:100vh;
+      padding:22px;
+    }
+    .container{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+    .card{
+      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    header{padding:16px 16px 12px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+    h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.45;max-width:860px;}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;
+      background: rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      color: var(--muted);font-size:12px;white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background: linear-gradient(135deg, var(--accent), var(--accent2));box-shadow: 0 0 0 3px rgba(124,92,255,.2);}
+    .layout{display:grid;grid-template-columns: 1fr 380px;gap:14px;align-items:start;}
+    @media (max-width: 980px){.layout{grid-template-columns:1fr;}}
+    .card-header{
+      padding:12px 12px 10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .card-header h2{margin:0;font-size:14px;letter-spacing:.2px}
+    .card-body{padding:12px}
+    .metrics{display:grid;grid-template-columns: repeat(4, minmax(0, 1fr));gap:10px;margin-bottom: 10px;}
+    @media (max-width: 980px){.metrics{grid-template-columns: repeat(2, minmax(0, 1fr));}}
+    .metric{padding:12px;border-radius: 14px;background: var(--panel2);border: 1px solid var(--border);}
+    .metric .k{color: var(--muted);font-size: 12px;margin-bottom: 6px;display:flex;justify-content:space-between;gap:10px;}
+    .metric .v{font-size: 18px;font-weight: 780;letter-spacing:.2px;font-variant-numeric: tabular-nums;}
+    .mini{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chartWrap{
+      padding:12px;border-radius: 14px;background: var(--panel2);border: 1px solid var(--border);
+      position:relative;min-height: 430px;
+    }
+    canvas{ width:100%; height:360px; display:block; }
+    .legend{
+      position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;
+      background: rgba(8,12,22,.55);border:1px solid rgba(255,255,255,.10);
+      padding:10px;border-radius: 12px;backdrop-filter: blur(8px);
+    }
+    .legItem{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+    .swatch{width:10px;height:10px;border-radius:3px;}
+    .swatch.hist{background: linear-gradient(180deg, rgba(124,92,255,1), rgba(45,212,191,.35));}
+    .swatch.med{background: rgba(255,183,3,.9);}
+    .footerNote{color: var(--muted);font-size:12px;padding: 10px 2px 0 2px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .controls{display:flex;flex-direction:column;gap:12px;}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px 0;}
+    input[type="number"], select{
+      width:100%;padding:10px 11px;border-radius: 12px;border:1px solid rgba(255,255,255,.12);
+      background: rgba(8,12,22,.55);color: var(--text);outline:none;box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+    }
+    input:focus, select:focus{box-shadow: inset 0 0 0 1px rgba(0,0,0,.25), var(--ring);border-color: rgba(124,92,255,.55);}
+    .row{display:flex;gap:10px}
+    .row>*{flex:1}
+    .btns{display:flex;gap:10px;flex-wrap:wrap}
+    button{
+      border:0;cursor:pointer;padding:10px 12px;border-radius: 12px;font-weight: 700;letter-spacing:.2px;
+      color: var(--text);background: rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    button:hover{background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.18);}
+    button:active{transform: translateY(1px);}
+    .primary{background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(45,212,191,.70));border-color: rgba(124,92,255,.35);}
+    .primary:hover{background: linear-gradient(135deg, rgba(124,92,255,1), rgba(45,212,191,.85));}
+    .status{font-size:12px;color:var(--muted);line-height:1.45}
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:11px;color: #cfe0ff;background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);padding:2px 6px;border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="card">
+      <div>
+        <h1>Frequency of Minimum Salaries (Histogram)</h1>
+        <div class="sub">
+          Uses <b>Salary_Minimum</b> (and if present, <b>Salary_Minimum_II</b> as an alternate min) from <b>2025DataAITest.xlsx</b> Sheet1 (125 rows, 12 columns).[^1]
+        </div>
+      </div>
+      <div class="pill" id="datasetPill"><span class="dot"></span> Ready</div>
+    </header>
+
+    <section class="layout">
+      <main class="card">
+        <div class="card-header">
+          <h2>Histogram</h2>
+          <div class="pill"><span class="kbd">Hover</span> bin details</div>
+        </div>
+        <div class="card-body">
+          <div class="metrics">
+            <div class="metric">
+              <div class="k"><span>Count</span><span class="mini">min values used</span></div>
+              <div class="v" id="mCount">0</div>
+            </div>
+            <div class="metric">
+              <div class="k"><span>Median</span><span class="mini">min salary</span></div>
+              <div class="v" id="mMedian">$0</div>
+            </div>
+            <div class="metric">
+              <div class="k"><span>Min</span><span class="mini">lowest min</span></div>
+              <div class="v" id="mMin">$0</div>
+            </div>
+            <div class="metric">
+              <div class="k"><span>Max</span><span class="mini">highest min</span></div>
+              <div class="v" id="mMax">$0</div>
+            </div>
+          </div>
+
+          <div class="chartWrap">
+            <div class="legend">
+              <div class="legItem"><span class="swatch hist"></span> Bin frequency</div>
+              <div class="legItem"><span class="swatch med"></span> Median</div>
+            </div>
+            <canvas id="chart" width="980" height="420" aria-label="Histogram of minimum salaries" role="img"></canvas>
+            <div class="footerNote">
+              <span class="pill" id="hoverPill">Hover a bar to see bin range</span>
+              <span class="pill">Bins are inclusive of lower bound</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="card">
+        <div class="card-header">
+          <h2>Settings</h2>
+          <div class="pill"><span class="kbd">Ctrl</span>+<span class="kbd">0</span> reset</div>
+        </div>
+        <div class="card-body">
+          <div class="controls">
+            <div class="row">
+              <div>
+                <label for="currency">Currency symbol</label>
+                <select id="currency">
+                  <option value="USD" selected>USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="INR">INR (₹)</option>
+                  <option value="JPY">JPY (¥)</option>
+                  <option value="AUD">AUD (A$)</option>
+                  <option value="CAD">CAD (C$)</option>
+                </select>
+              </div>
+              <div>
+                <label for="binSize">Bin size</label>
+                <select id="binSize">
+                  <option value="2500">$2,500</option>
+                  <option value="5000" selected>$5,000</option>
+                  <option value="10000">$10,000</option>
+                  <option value="20000">$20,000</option>
+                  <option value="50000">$50,000</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="minSalary">Min salary (filter ≥)</label>
+                <input id="minSalary" type="number" min="0" step="1000" placeholder="0" />
+              </div>
+              <div>
+                <label for="maxSalary">Max salary (filter ≤)</label>
+                <input id="maxSalary" type="number" min="0" step="1000" placeholder="(none)" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="useAltMin">Include Salary_Minimum_II</label>
+                <select id="useAltMin">
+                  <option value="yes" selected>Yes (use lower of the two)</option>
+                  <option value="no">No (Salary_Minimum only)</option>
+                </select>
+              </div>
+              <div>
+                <label for="excludeNA">Exclude N/A minimums</label>
+                <select id="excludeNA">
+                  <option value="yes" selected>Yes</option>
+                  <option value="no">No (treat as missing)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btns">
+              <button class="primary" id="applyBtn">Apply</button>
+              <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status" id="status"></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+<script>
+  // Data embedded from 2025DataAITest.xlsx Sheet1 excerpts (A2:L126) shown across sections.[^2][^3][^4][^5][^6][^7][^8][^9][^10][^11][^12]
+  // For frequency of minimum salaries, we extract Salary_Minimum and (optionally) Salary_Minimum_II when numeric.
+  // NOTE: Many rows in sections 7/12 and 8/12 have Salary_Minimum = N/A (missing), and some rows have Salary_Minimum_II populated (e.g., 65000, 70000, 83000, 76000, 60500).[^4][^10][^11][^12]
+  const rows = [
+    // Section 2/12 (A2:L11)[^2]
+    {min:60000, min2:null}, {min:52087, min2:null}, {min:130000, min2:null}, {min:43919, min2:null}, {min:60000, min2:null},
+    {min:65000, min2:null}, {min:75000, min2:null}, {min:100000, min2:null}, {min:65000, min2:null}, {min:52192, min2:null},
+
+    // Section 3/12 (A12:L23)[^3]
+    {min:50000, min2:null}, {min:57100, min2:null}, {min:55000, min2:null}, {min:79598, min2:null}, {min:50000, min2:null},
+    {min:75000, min2:null}, {min:120000, min2:null}, {min:70253, min2:null}, {min:66000, min2:null}, {min:65000, min2:null},
+    {min:65000, min2:null}, {min:65000, min2:null},
+
+    // Section 4/12 (A24:L35)[^4]
+    {min:80000, min2:null}, {min:71000, min2:null}, {min:60000, min2:null}, {min:66976, min2:null}, {min:74000, min2:null},
+    {min:74000, min2:null}, {min:60000, min2:null}, {min:70000, min2:null}, {min:62900, min2:null}, {min:52000, min2:65000},
+    {min:75000, min2:null}, {min:72335, min2:null},
+
+    // Section 5/12 (A36:L47)[^5]
+    {min:49199, min2:null}, {min:49199, min2:null}, {min:49199, min2:null}, {min:58000, min2:null}, {min:56000, min2:null},
+    {min:65000, min2:null}, {min:60000, min2:null}, {min:62000, min2:null}, {min:62000, min2:null}, {min:57200, min2:null},
+    {min:76267, min2:null}, {min:80000, min2:null},
+
+    // Section 6/12 (A48:L57)[^6]
+    {min:76267, min2:null}, {min:48000, min2:null}, {min:53100, min2:null}, {min:74000, min2:null}, {min:46979, min2:null},
+    {min:112200, min2:null}, {min:65000, min2:null}, {min:80000, min2:null}, {min:85149, min2:null}, {min:67386, min2:null},
+
+    // Section 7/12 (A58:L69): only first 5 rows have numeric Salary_Minimum; rest are N/A.[^7]
+    {min:60000, min2:null}, {min:65375, min2:null}, {min:261375, min2:null}, {min:65000, min2:null}, {min:65000, min2:null},
+    {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null},
+
+    // Section 8/12 (A70:L81): all Salary_Minimum are N/A in this excerpt.[^8]
+    {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null},
+    {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null}, {min:null, min2:null},
+
+    // Section 9/12 (A82:L93)[^9]
+    {min:70253, min2:null}, {min:78000, min2:null}, {min:null, min2:null}, {min:60000, min2:null}, {min:60000, min2:null},
+    {min:null, min2:null}, {min:68640, min2:null}, {min:100000, min2:null}, {min:null, min2:null}, {min:null, min2:null},
+    {min:78100, min2:null}, {min:null, min2:null},
+
+    // Section 10/12 (A94:L105)[^10]
+    {min:null, min2:null}, {min:62500, min2:null}, {min:43000, min2:null}, {min:75300, min2:null}, {min:60000, min2:null},
+    {min:70000, min2:null}, {min:63000, min2:70000}, {min:null, min2:null}, {min:81456, min2:null}, {min:60000, min2:null},
+    {min:60000, min2:null}, {min:73000, min2:83000},
+
+    // Section 11/12 (A106:L115)[^11]
+    {min:112900, min2:null}, {min:56000, min2:null}, {min:80003, min2:null}, {min:61200, min2:null}, {min:66000, min2:76000},
+    {min:null, min2:null}, {min:60000, min2:null}, {min:46978, min2:null}, {min:135000, min2:null}, {min:null, min2:null},
+
+    // Section 12/12 (A116:L126)[^12]
+    {min:80000, min2:null}, {min:90000, min2:null}, {min:66000, min2:null}, {min:null, min2:null}, {min:123000, min2:null},
+    {min:60000, min2:null}, {min:null, min2:null}, {min:135000, min2:null}, {min:55500, min2:60500}, {min:58500, min2:null}, {min:null, min2:null}
+  ];
+
+  const el = id => document.getElementById(id);
+  const currencySymbols = { USD:"$", EUR:"€", GBP:"£", INR:"₹", JPY:"¥", AUD:"A$", CAD:"C$" };
+
+  const canvas = el("chart");
+  const ctx = canvas.getContext("2d");
+  let hist = null; // {bins:[], edges:[], maxCount, median, min, max, values:[]}
+  let hoverBin = null;
+
+  function sym(){ return currencySymbols[el("currency").value] || "$"; }
+
+  function fmtCompact(v){
+    const s = sym();
+    const abs = Math.abs(v);
+    let out;
+    if (abs >= 1e6) out = (v/1e6).toFixed(abs>=1e7 ? 1 : 2) + "M";
+    else if (abs >= 1e3) out = (v/1e3).toFixed(abs>=1e5 ? 0 : 1) + "k";
+    else out = String(Math.round(v));
+    return `${s}${out}`;
+  }
+  function fmtFull(v){ return `${sym()}${Math.round(v).toLocaleString()}`; }
+
+  function median(arr){
+    const a = arr.slice().sort((x,y)=>x-y);
+    if (!a.length) return 0;
+    const m = Math.floor(a.length/2);
+    return a.length % 2 ? a[m] : (a[m-1]+a[m])/2;
+  }
+
+  function buildValues(){
+    const useAlt = el("useAltMin").value === "yes";
+    const excludeNA = el("excludeNA").value === "yes";
+    const minFilter = Number(el("minSalary").value || 0);
+    const maxFilterRaw = el("maxSalary").value.trim();
+    const maxFilter = maxFilterRaw ? Number(maxFilterRaw) : null;
+
+    const values = [];
+    let missing = 0;
+
+    for (const r of rows){
+      let v = r.min;
+      if (useAlt && Number.isFinite(r.min2)) v = Math.min(Number.isFinite(v) ? v : Infinity, r.min2);
+      if (!Number.isFinite(v)){
+        missing++;
+        continue;
+      }
+      if (excludeNA && !Number.isFinite(v)){
+        missing++;
+        continue;
+      }
+      if (Number.isFinite(minFilter) && minFilter>0 && v < minFilter) continue;
+      if (Number.isFinite(maxFilter) && v > maxFilter) continue;
+      values.push(v);
+    }
+
+    return { values, missing };
+  }
+
+  function buildHistogram(values, binSize){
+    if (!values.length) return {bins:[], edges:[], maxCount:0, median:0, min:0, max:0, values:[]};
+
+    const minV = Math.min(...values);
+    const maxV = Math.max(...values);
+
+    const start = Math.floor(minV / binSize) * binSize;
+    const end = Math.ceil((maxV + 1) / binSize) * binSize;
+    const binCount = Math.max(1, Math.round((end - start) / binSize));
+
+    const bins = new Array(binCount).fill(0);
+    const edges = new Array(binCount+1);
+    for (let i=0;i<=binCount;i++) edges[i] = start + i*binSize;
+
+    for (const v of values){
+      let idx = Math.floor((v - start) / binSize);
+      if (idx < 0) idx = 0;
+      if (idx >= binCount) idx = binCount - 1;
+      bins[idx]++;
+    }
+    const maxCount = Math.max(...bins);
+    return { bins, edges, maxCount, median: median(values), min: minV, max: maxV, values };
+  }
+
+  function resizeCanvasToDisplaySize(){
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.floor(rect.width * dpr);
+    const h = Math.floor(360 * dpr);
+    if (canvas.width !== w || canvas.height !== h){
+      canvas.width = w; canvas.height = h;
+    }
+    return {w,h,dpr};
+  }
+
+  function rr(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  function draw(){
+    const {w,h} = resizeCanvasToDisplaySize();
+    ctx.clearRect(0,0,w,h);
+
+    // panel backdrop
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.10)";
+    rr(8, 8, w-16, h-16, 18);
+    ctx.fill();
+    ctx.restore();
+
+    if (!hist || !hist.bins.length){
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.font = "600 14px " + getComputedStyle(document.body).fontFamily;
+      ctx.textAlign = "center";
+      ctx.fillText("No minimum salary values match filters.", w/2, h/2);
+      ctx.restore();
+      return;
+    }
+
+    const pad = {l: 56, r: 18, t: 16, b: 56};
+    const plotW = w - pad.l - pad.r;
+    const plotH = h - pad.t - pad.b;
+    const x0 = pad.l, y0 = pad.t;
+
+    // y grid (counts)
+    const ticks = 5;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.lineWidth = 1;
+    ctx.font = "600 11px " + getComputedStyle(document.body).fontFamily;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let i=0;i<=ticks;i++){
+      const v = (hist.maxCount) * (i/ticks);
+      const y = y0 + plotH * (1 - i/ticks);
+      ctx.beginPath();
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x0 + plotW, y);
+      ctx.stroke();
+      ctx.fillText(String(Math.round(v)), x0-10, y);
+    }
+    ctx.restore();
+
+    const n = hist.bins.length;
+    const gap = Math.max(6, Math.min(10, plotW/(n*8)));
+    const barW = (plotW - gap*(n-1)) / n;
+
+    const grad = ctx.createLinearGradient(0, y0, 0, y0+plotH);
+    grad.addColorStop(0, "rgba(124,92,255,.95)");
+    grad.addColorStop(1, "rgba(45,212,191,.35)");
+
+    canvas._hit = [];
+    for (let i=0;i<n;i++){
+      const count = hist.bins[i];
+      const x = x0 + i*(barW+gap);
+      const barH = (count / hist.maxCount) * plotH;
+      const y = y0 + (plotH - barH);
+
+      ctx.save();
+      ctx.fillStyle = grad;
+      rr(x, y, barW, Math.max(2, barH), 10);
+      ctx.fill();
+
+      // hover highlight
+      if (hoverBin === i){
+        ctx.strokeStyle = "rgba(255,183,3,.95)";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "rgba(255,183,3,.35)";
+        ctx.shadowBlur = 14;
+        rr(x-2, y-2, barW+4, Math.max(2, barH)+4, 12);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      canvas._hit.push({i, x, y:y0, w:barW, h:plotH});
+    }
+
+    // x labels (sparse)
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,.65)";
+    ctx.font = "600 11px " + getComputedStyle(document.body).fontFamily;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    const labelEvery = Math.max(1, Math.ceil(n / 9));
+    for (let i=0;i<n;i+=labelEvery){
+      const label = fmtCompact(hist.edges[i]).replace(/\.0k$/,"k");
+      const x = x0 + i*(barW+gap) + barW/2;
+      ctx.fillText(label, x, y0 + plotH + 10*(canvas.height/360));
+    }
+    ctx.restore();
+
+    // median line
+    const med = hist.median;
+    const start = hist.edges[0];
+    const binSize = hist.edges[1] - hist.edges[0];
+    const pos = (med - start) / (binSize * n);
+    const mx = x0 + Math.max(0, Math.min(1, pos)) * plotW;
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,183,3,.95)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,6]);
+    ctx.beginPath();
+    ctx.moveTo(mx, y0);
+    ctx.lineTo(mx, y0 + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(255,183,3,.95)";
+    ctx.font = "700 11px " + getComputedStyle(document.body).fontFamily;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    const tx = Math.min(w-12, mx + 6);
+    ctx.fillText(`Median: ${fmtCompact(med)}`, tx, y0 + 14);
+    ctx.restore();
+
+    // tooltip for hovered bin
+    if (hoverBin != null){
+      const a = hist.edges[hoverBin];
+      const b = hist.edges[hoverBin+1];
+      const c = hist.bins[hoverBin];
+
+      const lines = [
+        `Bin: ${fmtFull(a)} – ${fmtFull(b-1)}`,
+        `Count: ${c}`
+      ];
+
+      ctx.save();
+      ctx.font = "600 12px " + getComputedStyle(document.body).fontFamily;
+      const padding = 10;
+      const lineH = 18;
+      const width = Math.max(...lines.map(t=>ctx.measureText(t).width)) + padding*2;
+      const height = padding*2 + lineH*lines.length;
+
+      const hx = canvas._hit[hoverBin].x + canvas._hit[hoverBin].w + 10;
+      const hy = y0 + 10;
+
+      let bx = hx, by = hy;
+      if (bx + width > w - 12) bx = canvas._hit[hoverBin].x - width - 10;
+      if (by + height > h - 12) by = h - height - 12;
+
+      ctx.fillStyle = "rgba(8,12,22,.82)";
+      ctx.strokeStyle = "rgba(255,255,255,.14)";
+      ctx.lineWidth = 1;
+      ctx.shadowColor = "rgba(0,0,0,.35)";
+      ctx.shadowBlur = 18;
+      rr(bx, by, width, height, 14);
+      ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      lines.forEach((t, idx)=>{
+        ctx.fillText(t, bx+padding, by+padding+idx*lineH);
+      });
+      ctx.restore();
+    }
+  }
+
+  function updateUI(missing, values){
+    el("mCount").textContent = String(values.length);
+    el("mMedian").textContent = values.length ? fmtCompact(hist.median) : fmtCompact(0);
+    el("mMin").textContent = values.length ? fmtCompact(hist.min) : fmtCompact(0);
+    el("mMax").textContent = values.length ? fmtCompact(hist.max) : fmtCompact(0);
+
+    el("datasetPill").innerHTML = `<span class="dot"></span> ${values.length} mins`;
+    el("status").textContent = `Built from embedded Sheet1 excerpts. Missing/N/A minimums skipped: ${missing}.`;
+  }
+
+  function apply(){
+    const binSize = Number(el("binSize").value);
+    const {values, missing} = buildValues();
+    hist = buildHistogram(values, binSize);
+    hoverBin = null;
+    updateUI(missing, values);
+    el("hoverPill").textContent = "Hover a bar to see bin range";
+    draw();
+  }
+
+  function reset(){
+    el("currency").value = "USD";
+    el("binSize").value = "5000";
+    el("minSalary").value = "";
+    el("maxSalary").value = "";
+    el("useAltMin").value = "yes";
+    el("excludeNA").value = "yes";
+    apply();
+  }
+
+  function getMousePos(evt){
+    const rect = canvas.getBoundingClientRect();
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+  }
+  function hitTest(mx, my){
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    const x = mx * sx;
+    const y = my * sy;
+    const hits = canvas._hit || [];
+    for (const h of hits){
+      if (x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h) return h.i;
+    }
+    return null;
+  }
+
+  canvas.addEventListener("mousemove", (e)=>{
+    const p = getMousePos(e);
+    const idx = hitTest(p.x, p.y);
+    if (idx !== hoverBin){
+      hoverBin = idx;
+      if (hoverBin == null) el("hoverPill").textContent = "Hover a bar to see bin range";
+      else{
+        const a = hist.edges[hoverBin];
+        const b = hist.edges[hoverBin+1];
+        el("hoverPill").textContent = `Bin ${fmtCompact(a)} – ${fmtCompact(b-1)} • Count ${hist.bins[hoverBin]}`;
+      }
+      draw();
+    }
+    canvas.style.cursor = (idx!=null) ? "pointer" : "default";
+  });
+  canvas.addEventListener("mouseleave", ()=>{
+    hoverBin = null;
+    el("hoverPill").textContent = "Hover a bar to see bin range";
+    draw();
+    canvas.style.cursor = "default";
+  });
+
+  el("applyBtn").addEventListener("click", apply);
+  el("resetBtn").addEventListener("click", reset);
+  ["currency","binSize","useAltMin","excludeNA"].forEach(id=> el(id).addEventListener("input", apply));
+  window.addEventListener("resize", draw);
+
+  document.addEventListener("keydown", (e)=>{
+    if ((e.ctrlKey || e.metaKey) && e.key === "0") reset();
+  });
+
+  // init
+  apply();
+</script>
+</body>
+</html>
